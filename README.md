@@ -25,6 +25,20 @@ To install the entire stack locally, you will need to have :
 
 #### 4. Usage
 
+To perform the tests locally, after installing above dependencies, launch Docker desktop, then in another terminal, launch localstack with : 
+
+```bash
+docker run --rm -it -p 4566:4566 -p 4571:4571 localstack/localstack
+```
+
+Then deploy the application
+
+```bash
+cdklocal bootstrap aws://000000000000/us-east-1
+cdklocal synth
+cdklocal deploy
+```
+
 Here is a sample request JSON file containing the structure of an input.
 
 ```bash
@@ -43,14 +57,16 @@ $
 Here is an example request :
 
 ```bash
-$ curl -X POST http://api-gateway-demo-endpoint.execute-api.com/servers request.json
+$ curl -X POST -H "Content-Type: application/json" http://api-gateway-demo-endpoint.execute-api.com/servers -d request.json
 ```
 
 Here is an example response to the above request :
 
 ```bash
 {
-  response: "server1",
+  "Id": "1f2be9ee-03b1-45fe-90d2-b73e27561e9b",
+  "response": "server1",
+  "error": "",
 }
 ```
 
