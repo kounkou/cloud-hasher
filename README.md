@@ -69,3 +69,23 @@ Here is an example response to the above request :
 }
 ```
 
+#### Error handling
+
+Error handling helps the user design the code to be robust. The following errors are supported :
+
+- Node list provided is empty
+
+```bash
+curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9jooqblp52.execute-api.localhost.localstack.cloud:4566/prod/ | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   131  100   116  100    15    702     90 --:--:-- --:--:-- --:--:--   823
+{
+  "statusCode": 400,
+  "isBase64Encoded": false,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "node list is empty"
+}
+```
