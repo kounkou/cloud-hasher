@@ -28,7 +28,7 @@ To install the entire stack locally, you will need to have :
 To perform the tests locally, after installing above dependencies, launch Docker desktop, then in another terminal, launch localstack with : 
 
 ```bash
-docker run --rm -it -p 4566:4566 -p 4571:4571 localstack/localstack
+docker run --rm -it -p 4566:4566 -p 4571:4571 -v /var/run/docker.sock:/var/run/docker.sock localstack/localstack
 ```
 
 Then deploy the application
@@ -57,7 +57,7 @@ $
 Here is an example request :
 
 ```bash
-$ curl -X POST -H "Content-Type: application/json" http://api-gateway-demo-endpoint.execute-api.com/servers -d request.json
+$ curl -X POST -H "Content-Type: application/json" https://xjpjlzyoly.execute-api.localhost.localstack.cloud:4566/prod -d request.json
 ```
 
 Here is an example response to the above request :
