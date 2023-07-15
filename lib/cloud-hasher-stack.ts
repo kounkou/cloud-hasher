@@ -1,36 +1,36 @@
-import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as sqs from 'aws-cdk-lib/aws-sqs';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as path from 'path';
+import { Queue } from 'aws-cdk-lib/aws-sqs';
+import { Function, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
+import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { join } from 'path';
 
-export class CloudHasherStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+export class CloudHasherStack extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // Requests that failed to be processed will be sent to DLQ
-    const dlq = new sqs.Queue(this, 'CloudHasherDLQ', {
-      visibilityTimeout: cdk.Duration.seconds(300),
+    const dlq = new Queue(this, 'CloudHasherDLQ', {
+      visibilityTimeout: Duration.seconds(300),
     });
 
     // Processing Lambda for the requests
-    const hashRequestLambda = new lambda.Function(this, 'CloudHasherLambda', {
-      runtime: lambda.Runtime.GO_1_X,
+    const hashRequestLambda = new Function(this, 'CloudHasherLambda', {
+      runtime: Runtime.GO_1_X,
       handler: 'main',
       deadLetterQueue: dlq,
       deadLetterQueueEnabled: true,
-      code: lambda.Code.fromAsset(path.join(__dirname, '../src/processorlambda/main.zip')),
+      code: Code.fromAsset(join(__dirname, '../src/processorlambda/main.zip')),
     });
 
     // APIGateway
-    const restApi = new apigateway.RestApi(this, 'CloudHasherRestAPI', {
+    const restApi = new RestApi(this, 'CloudHasherRestAPI', {
       restApiName: 'cloudHasherRestAPI',
     });
 
     restApi.root.addMethod(
         'POST', 
-        new apigateway.LambdaIntegration(
+        new LambdaIntegration(
             hashRequestLambda, {
                 proxy: false,
                 requestTemplates: {
