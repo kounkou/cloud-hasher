@@ -9,14 +9,6 @@ import (
 	"github.com/kounkou/hasherprovider"
 )
 
-var (
-	ErrEmptyNodes            = errors.New("node list is empty")
-	ErrEmptyHashKeys         = errors.New("hash keys list is empty")
-	ErrEmptyHashType         = errors.New("hash type is empty")
-	ErrFailureCreatingHasher = errors.New("hasher creation failure")
-	ErrFailureHashingKey     = errors.New("hash failure")
-)
-
 type AlgorithmType int64
 
 type Event struct {
@@ -38,72 +30,74 @@ var m = map[string]int{
 	"UNIFORM_HASHING":    2,
 }
 
-func handleRequest(event Event) (string, error) {
+var (
+	ErrEmptyNodes            = errors.New("node list is empty")
+	ErrEmptyHashKeys         = errors.New("hash keys list is empty")
+	ErrEmptyHashType         = errors.New("hash type is empty")
+	ErrFailureCreatingHasher = errors.New("hasher creation failure")
+	ErrFailureHashingKey     = errors.New("hash failure")
+)
 
-	hasherprovider := hasherprovider.HasherProvider{}
-
-	h, err := hasherprovider.GetHasher(m[event.HashingType])
-
-	if h == nil || err != nil {
-		return "", ErrFailureCreatingHasher
-	}
-
-	h.SetReplicas(1)
-
-	for _, v := range event.Nodes {
-		h.AddNode(v)
-	}
-
-	var r []string
-
-	for _, v := range event.HashKeys {
-		t, err := h.Hash(v, 0)
-
-		if err != nil {
-			return "", ErrFailureHashingKey
-		}
-
-		r = append(r, t)
-	}
-
+func handleRequest(event Event) ([]string, error) {
 	if len(event.Nodes) == 0 {
-		return "", ErrEmptyNodes
+		return nil, ErrEmptyNodes
 	} else if len(event.HashKeys) == 0 {
-		return "", ErrEmptyHashKeys
+		return nil, ErrEmptyHashKeys
 	} else if event.HashingType == "" {
-		return "", ErrEmptyHashType
+		return nil, ErrEmptyHashType
 	}
 
-	return strings.Join(r, ", "), nil
+	hasherProvider := hasherprovider.HasherProvider{}
+	hasher, err := hasherProvider.GetHasher(m[event.HashingType])
+	if err != nil || hasher == nil {
+		return nil, ErrFailureCreatingHasher
+	}
+	hasher.SetReplicas(1)
+
+	var results []string
+	for _, node := range event.Nodes {
+		hasher.AddNode(node)
+	}
+
+	for _, key := range event.HashKeys {
+		hashedKey, err := hasher.Hash(key, 0)
+		if err != nil {
+			return nil, ErrFailureHashingKey
+		}
+		results = append(results, hashedKey)
+	}
+
+	return results, nil
 }
 
 func Handler(event Event) (Response, error) {
-
-	result, err := handleRequest(event)
-
-	statusCode := 200
-
+	results, err := handleRequest(event)
 	if err != nil {
-		if err == ErrEmptyNodes {
+		var statusCode int
+		var result string
+
+		switch err {
+		case ErrEmptyNodes, ErrEmptyHashKeys, ErrEmptyHashType, ErrFailureCreatingHasher:
 			statusCode = 400
-			result = ErrEmptyNodes.Error()
-		} else if err == ErrEmptyHashKeys {
-			statusCode = 400
-			result = ErrEmptyHashKeys.Error()
-		} else if err == ErrEmptyHashType {
-			statusCode = 400
-			result = ErrEmptyHashType.Error()
-		} else if err == ErrFailureCreatingHasher {
-			statusCode = 400
-			result = ErrFailureCreatingHasher.Error()
+			result = err.Error()
+		default:
+			statusCode = 500
+			result = "Internal Server Error"
 		}
+
+		return Response{
+			StatusCode:      statusCode,
+			IsBase64Encoded: false,
+			Headers:         map[string]string{"Content-Type": "application/json"},
+			Body:            result,
+		}, nil
 	}
 
 	return Response{
-		StatusCode:      int(statusCode),
+		StatusCode:      200,
 		IsBase64Encoded: false,
 		Headers:         map[string]string{"Content-Type": "application/json"},
-		Body:            result,
+		Body:            strings.Join(results, ", "),
 	}, nil
 }
 
