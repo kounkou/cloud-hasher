@@ -50,7 +50,7 @@ func handleRequest(event Event) (string, error) {
 
 	h.SetReplicas(1)
 
-	for v := range event.Nodes {
+	for _, v := range event.Nodes {
 		h.AddNode(v)
 	}
 

@@ -43,29 +43,51 @@ Here is a sample request JSON file containing the structure of an input.
 
 ```bash
 $ cat request.json
-{
+'{
   "nodes": {
-    "1": "server1",
-    "2": "server2",
-    "3": "server3"
+    "node1": "server1",
+    "node2": "server2",
+    "node3": "server3"
   },
-  "toHash": "1"
+  "hashKeys": [
+    "key1",
+    "server1",
+    "server3"
+  ],
+  "hashingType": "CONSISTENT_HASHING"
 }
+'
 ```
 
 Here is an example request :
 
 ```bash
-$ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://nj1gvaq3z6.execute-api.localhost.localstack.cloud:4566/prod/
+$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
+  "nodes": {
+    "node1": "server1",
+    "node2": "server2",
+    "node3": "server3"
+  },
+  "hashKeys": [
+    "key1",
+    "server1",
+    "server3"
+  ],
+  "hashingType": "CONSISTENT_HASHING"
+}
+' | jq
 ```
 
 Here is an example response to the above request :
 
 ```bash
 {
-  "Id": "1f2be9ee-03b1-45fe-90d2-b73e27561e9b",
-  "response": "server1",
-  "error": "",
+  "statusCode": 200,
+  "isBase64Encoded": false,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "server2, server1, server1"
 }
 ```
 
@@ -87,5 +109,65 @@ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9j
     "Content-Type": "application/json"
   },
   "body": "node list is empty"
+}
+```
+
+- Hashing type is empty
+
+```bash
+url -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
+  "nodes": {
+    "node1": "server1",
+    "node2": "server2",
+    "node3": "server3"
+  },
+  "hashKeys": [
+    "key1",
+    "server1",
+    "server3"
+  ],
+  "hashingTypes": "CONSISTENT_HASHING"
+}
+' | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   310  100   116  100   194     24     40  0:00:04  0:00:04 --:--:--    34
+{
+  "statusCode": 400,
+  "isBase64Encoded": false,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "hash type is empty"
+}
+```
+
+- Empty hashkeys
+
+```bash
+curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
+  "nodes": {
+    "node1": "server1",
+    "node2": "server2",
+    "node3": "server3"
+  },
+  "hashKey": [
+    "key1",
+    "server1",
+    "server3"
+  ],
+  "hashingType": "CONSISTENT_HASHING"
+}
+' | jq
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   313  100   121  100   192    583    926 --:--:-- --:--:-- --:--:--  1638
+{
+  "statusCode": 400,
+  "isBase64Encoded": false,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": "hash keys list is empty"
 }
 ```
