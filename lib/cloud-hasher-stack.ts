@@ -10,12 +10,6 @@ export class CloudHasherStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create an IAM role in the target account
-    const targetRole = new iam.Role(this, 'TargetRole', {
-        assumedBy: new iam.AccountPrincipal('TARGET_ACCOUNT_ID'), // Replace with the target account ID
-        // Other role configuration options
-    });
-
     // Requests that failed to be processed will be sent to DLQ
     const dlq = new sqs.Queue(this, 'CloudHasherDLQ', {
       visibilityTimeout: cdk.Duration.seconds(300),
