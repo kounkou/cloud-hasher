@@ -43,7 +43,6 @@ Here is a sample request JSON file containing the structure of an input.
 
 ```bash
 $ cat request.json
-$
 {
   "nodes": {
     "1": "server1",
@@ -57,7 +56,7 @@ $
 Here is an example request :
 
 ```bash
-$ curl -X POST -H "Content-Type: application/json" https://xjpjlzyoly.execute-api.localhost.localstack.cloud:4566/prod -d request.json
+$ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://nj1gvaq3z6.execute-api.localhost.localstack.cloud:4566/prod/
 ```
 
 Here is an example response to the above request :

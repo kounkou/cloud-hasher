@@ -1,8 +1,14 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-lambda-go/lambda"
 )
+
+type Event struct {
+	Name string `json:"name"`
+}
 
 type Response struct {
 	StatusCode      int               `json:"statusCode"`
@@ -11,12 +17,15 @@ type Response struct {
 	Body            string            `json:"body"`
 }
 
-func Handler() (Response, error) {
+func Handler(event Event) (Response, error) {
+
+	name := event.Name
+
 	return Response{
 		StatusCode:      200,
 		IsBase64Encoded: false,
 		Headers:         map[string]string{"Content-Type": "application/json"},
-		Body:            `{"messsage":"Hello World from lambda"}`,
+		Body:            fmt.Sprintf("Hello %s!", name),
 	}, nil
 }
 

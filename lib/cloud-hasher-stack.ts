@@ -3,7 +3,6 @@ import { Construct } from 'constructs';
 import * as sqs from 'aws-cdk-lib/aws-sqs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
-import * as iam from 'aws-cdk-lib/aws-iam';
 import * as path from 'path';
 
 export class CloudHasherStack extends cdk.Stack {
@@ -29,10 +28,16 @@ export class CloudHasherStack extends cdk.Stack {
       restApiName: 'cloudHasherRestAPI',
     });
 
-    restApi.root.addMethod('GET', new apigateway.LambdaIntegration(hashRequestLambda, {
-      contentHandling: apigateway.ContentHandling.CONVERT_TO_TEXT, // convert to base64
-      credentialsPassthrough: false,
-    }));
-    restApi.root.addMethod('POST', new apigateway.LambdaIntegration(hashRequestLambda));
+    restApi.root.addMethod(
+        'POST', 
+        new apigateway.LambdaIntegration(
+            hashRequestLambda, {
+                proxy: false,
+                requestTemplates: {
+                    'application/json': '$input.json("$")',
+                },
+            },
+        ),
+    );
   }
 }
