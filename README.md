@@ -91,7 +91,7 @@ Here is an example response to the above request :
 }
 ```
 
-#### Error handling
+#### 5. Error handling
 
 Error handling helps the user design the code to be robust. The following errors are supported :
 
@@ -170,4 +170,31 @@ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.
   },
   "body": "hash keys list is empty"
 }
+```
+
+#### 6. Testing
+
+To perform test for the stack please run the following command
+
+```bash
+$ npm test
+```
+
+Sample result 
+
+```bash
+> cloud-hasher@0.1.0 test
+> jest
+
+ PASS  test/cloud-hasher.test.ts (9.265 s)
+  CloudHasherStack
+    ✓ SQS Queue Created (219 ms)
+    ✓ Lambda Created (114 ms)
+    ✓ APIGateway Created (112 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       3 passed, 3 total
+Snapshots:   0 total
+Time:        9.481 s
+Ran all test suites.
 ```
