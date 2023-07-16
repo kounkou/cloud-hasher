@@ -8,13 +8,11 @@ import { join } from 'path';
 export class CloudHasherStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
-
-    // Requests that failed to be processed will be sent to DLQ
+    
     const dlq = new Queue(this, 'CloudHasherDLQ', {
       visibilityTimeout: Duration.seconds(300),
     });
 
-    // Processing Lambda for the requests
     const hashRequestLambda = new Function(this, 'CloudHasherLambda', {
       runtime: Runtime.GO_1_X,
       handler: 'main',
@@ -23,13 +21,12 @@ export class CloudHasherStack extends Stack {
       code: Code.fromAsset(join(__dirname, '../src/processorlambda/main.zip')),
     });
 
-    // APIGateway
     const restApi = new RestApi(this, 'CloudHasherRestAPI', {
       restApiName: 'cloudHasherRestAPI',
     });
 
     restApi.root.addMethod(
-        'POST', 
+        'POST',
         new LambdaIntegration(
             hashRequestLambda, {
                 proxy: false,

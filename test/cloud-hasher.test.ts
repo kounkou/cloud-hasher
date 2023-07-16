@@ -1,17 +1,36 @@
-// import * as cdk from 'aws-cdk-lib';
-// import { Template } from 'aws-cdk-lib/assertions';
-// import * as CloudHasher from '../lib/cloud-hasher-stack';
+import { App } from 'aws-cdk-lib';
+import { Template } from 'aws-cdk-lib/assertions';
+import { CloudHasherStack } from '../lib/cloud-hasher-stack';
 
-// example test. To run these tests, uncomment this file along with the
-// example resource in lib/cloud-hasher-stack.ts
-test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new CloudHasher.CloudHasherStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
+describe('CloudHasherStack', () => {
+    let stack: CloudHasherStack;
 
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+    beforeEach(() => {
+      stack = new CloudHasherStack(new App(), 'CloudHasherStack');
+    });
+
+    test('SQS Queue Created', () => {
+        const template = Template.fromStack(stack);
+
+        template.hasResourceProperties('AWS::SQS::Queue', {
+            VisibilityTimeout: 300
+        });
+    });
+
+    test('Lambda Created', () => {
+        const template = Template.fromStack(stack);
+
+        template.hasResourceProperties('AWS::Lambda::Function', {
+            Runtime: "go1.x",
+            Handler: "main",
+        });
+    });
+
+    test('APIGateway Created', () => {
+        const template = Template.fromStack(stack);
+
+        template.hasResourceProperties('AWS::ApiGateway::RestApi', {
+            Name: 'cloudHasherRestAPI'
+        });
+    });
 });
