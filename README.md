@@ -98,7 +98,7 @@ Error handling helps the user design the code to be robust. The following errors
 - Node list provided is empty
 
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9jooqblp52.execute-api.localhost.localstack.cloud:4566/prod/ | jq
+$ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9jooqblp52.execute-api.localhost.localstack.cloud:4566/prod/ | jq
   % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
 100   131  100   116  100    15    702     90 --:--:-- --:--:-- --:--:--   823
@@ -115,7 +115,7 @@ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9j
 - Hashing type is empty
 
 ```bash
-url -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
+$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
   "nodes": {
     "node1": "server1",
     "node2": "server2",
@@ -145,7 +145,7 @@ url -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.l
 - Empty hashkeys
 
 ```bash
-curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
+$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
   "nodes": {
     "node1": "server1",
     "node2": "server2",
