@@ -12,9 +12,10 @@ import (
 type AlgorithmType int64
 
 type Event struct {
-	Nodes       map[string]string `json:"nodes"`
-	HashKeys    []string          `json:"hashKeys"`
-	HashingType string            `json:"hashingType"`
+	Nodes       []string `json:"nodes"`
+	HashKeys    []string `json:"hashKeys"`
+	HashingType string   `json:"hashingType"`
+	Replicas    int      `json:"replicas"`
 }
 
 type Response struct {
@@ -36,15 +37,24 @@ var (
 	ErrEmptyHashType         = errors.New("hash type is empty")
 	ErrFailureCreatingHasher = errors.New("hasher creation failure")
 	ErrFailureHashingKey     = errors.New("hash failure")
+	ErrInvalidReplicas       = errors.New("replicas number should be positive or 0")
+	ErrUnknownHashType       = errors.New("unknown hashing type")
 )
 
 func handleRequest(event Event) ([]string, error) {
-	if len(event.Nodes) == 0 {
+
+	_, ok := m[event.HashingType]
+
+	if !ok {
+		return nil, ErrUnknownHashType
+	} else if len(event.Nodes) == 0 {
 		return nil, ErrEmptyNodes
 	} else if len(event.HashKeys) == 0 {
 		return nil, ErrEmptyHashKeys
 	} else if event.HashingType == "" {
 		return nil, ErrEmptyHashType
+	} else if event.Replicas < 0 {
+		return nil, ErrInvalidReplicas
 	}
 
 	hasherProvider := hasherprovider.HasherProvider{}
@@ -52,7 +62,12 @@ func handleRequest(event Event) ([]string, error) {
 	if err != nil || hasher == nil {
 		return nil, ErrFailureCreatingHasher
 	}
-	hasher.SetReplicas(1)
+
+	hasher.SetReplicas(event.Replicas)
+
+	for _, v := range event.Nodes {
+		hasher.AddNode(v)
+	}
 
 	var results []string
 	for _, node := range event.Nodes {
@@ -77,7 +92,7 @@ func Handler(event Event) (Response, error) {
 		var result string
 
 		switch err {
-		case ErrEmptyNodes, ErrEmptyHashKeys, ErrEmptyHashType, ErrFailureCreatingHasher:
+		case ErrEmptyNodes, ErrEmptyHashKeys, ErrEmptyHashType, ErrFailureCreatingHasher, ErrFailureHashingKey, ErrInvalidReplicas, ErrUnknownHashType:
 			statusCode = 400
 			result = err.Error()
 		default:
