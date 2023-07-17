@@ -1,5 +1,8 @@
 # cloud-hasher
 
+
+[![license](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/kounkou/hasherprovider/blob/master/LICENSE)
+
 #### 1. Description
 
 Certain applications encounter challenges in efficiently allocating entities, such as events, to designated stores or nodes. 
