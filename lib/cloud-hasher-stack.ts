@@ -14,7 +14,7 @@ export class CloudHasherStack extends Stack {
     });
 
     const hashRequestLambda = new Function(this, 'CloudHasherLambda', {
-      runtime: Runtime.GO_1_X,
+      runtime: Runtime.PROVIDED_AL2,
       handler: 'main',
       deadLetterQueue: dlq,
       deadLetterQueueEnabled: true,
