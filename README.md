@@ -26,6 +26,28 @@ To install the entire stack locally, you will need to have :
 - Docker
 - Localstack
 
+**Other installs**
+
+```bash
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+sudo apt update
+sudo apt install unzip -y
+unzip awscliv2.zip
+sudo ./aws/install
+```
+
+You can test with
+
+```bash
+aws --version
+```
+
+And add alias to setup awslocal
+
+```bash
+alias awslocal="AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=${DEFAULT_REGION:-$AWS_DEFAULT_REGION} aws --endpoint-url=http://${LOCALSTACK_HOST:-localhost}:4566"
+```
+
 #### 4. Usage
 
 To perform the tests locally, after installing above dependencies, launch Docker desktop, then in another terminal, launch localstack with : 
