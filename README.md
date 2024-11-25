@@ -37,9 +37,7 @@ docker run --rm -it -p 4566:4566 -p 4571:4571 -v /var/run/docker.sock:/var/run/d
 Then deploy the application
 
 ```bash
-cdklocal bootstrap aws://000000000000/us-east-1
-cdklocal synth
-cdklocal deploy
+cdklocal bootstrap aws://000000000000/us-east-1 && cdklocal synth && cdklocal deploy
 ```
 
 Here is a sample request JSON file containing the structure of an input.
