@@ -5,7 +5,8 @@
     "cloud-hasher": "bin/cloud-hasher.js"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && ./build-lambda.sh",
+    "install": "./install.sh",
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk"
