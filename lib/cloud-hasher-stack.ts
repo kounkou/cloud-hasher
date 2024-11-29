@@ -14,11 +14,11 @@ export class CloudHasherStack extends Stack {
     });
 
     const hashRequestLambda = new Function(this, 'CloudHasherLambda', {
-      runtime: Runtime.PROVIDED_AL2,
+      runtime: Runtime.GO_1_X,
       handler: 'main',
       deadLetterQueue: dlq,
       deadLetterQueueEnabled: true,
-      code: Code.fromAsset(join(__dirname, '../src/processorlambda/main.zip')),
+      code: Code.fromAsset(join(__dirname, '../build/lambda.zip')),
     });
 
     const restApi = new RestApi(this, 'CloudHasherRestAPI', {
