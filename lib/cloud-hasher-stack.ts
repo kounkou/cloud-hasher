@@ -2,7 +2,7 @@ import { Stack, StackProps, Duration } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { Queue } from 'aws-cdk-lib/aws-sqs';
 import { Function, Code, Runtime } from 'aws-cdk-lib/aws-lambda';
-import { RestApi, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { RestApi, MethodLoggingLevel, LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
 import { join } from 'path';
 
 export class CloudHasherStack extends Stack {
@@ -16,9 +16,24 @@ export class CloudHasherStack extends Stack {
     const hashRequestLambda = new Function(this, 'CloudHasherLambda', {
       runtime: Runtime.GO_1_X,
       handler: 'main',
+      memorySize: 512,
+      timeout: Duration.seconds(10),
       deadLetterQueue: dlq,
       deadLetterQueueEnabled: true,
-      code: Code.fromAsset(join(__dirname, '../build/lambda.zip')),
+      code: Code.fromAsset(join(__dirname, '../src/processorlambda'), {
+        bundling: {
+          image: Runtime.GO_1_X.bundlingImage,
+          command: [
+            'bash', '-c',
+            [
+              'mkdir -p /tmp/go-cache /tmp/go-mod',
+              'cd /asset-input',
+              'ls -al',
+              'GOCACHE=/tmp/go-cache GOMODCACHE=/tmp/go-mod GOOS=linux GOARCH=amd64 go build -o /asset-output/main main.go'
+            ].join(' && ')
+          ],
+        },
+      }),
     });
 
     const restApi = new RestApi(this, 'CloudHasherRestAPI', {
@@ -29,10 +44,7 @@ export class CloudHasherStack extends Stack {
         'POST',
         new LambdaIntegration(
             hashRequestLambda, {
-                proxy: false,
-                requestTemplates: {
-                    'application/json': '$input.json("$")',
-                },
+                proxy: true,
             },
         ),
     );

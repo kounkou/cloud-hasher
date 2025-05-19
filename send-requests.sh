@@ -8,19 +8,4 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-# request 1 : add servers
-
-curl -X POST -H "Content-Type: application/json" $1 -d '{
-  "nodes": {
-    "node1": "server1",
-    "node2": "server2",
-    "node3": "server3"
-  },
-  "hashKeys": [
-    "key1",
-    "server1",
-    "server3"
-  ],
-  "hashingType": "CONSISTENT_HASHING"
-}
-' | jq
+curl -X POST -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" -d '{"nodes":["node1","node2"],"hashKeys":["node1"],"hashingType":"CONSISTENT_HASHING"}' | jq

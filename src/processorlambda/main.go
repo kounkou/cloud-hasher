@@ -1,28 +1,20 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"strings"
+	"fmt"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-
 	"github.com/kounkou/hasherprovider"
 )
-
-type AlgorithmType int64
 
 type Event struct {
 	Nodes       []string `json:"nodes"`
 	HashKeys    []string `json:"hashKeys"`
 	HashingType string   `json:"hashingType"`
 	Replicas    int      `json:"replicas"`
-}
-
-type Response struct {
-	StatusCode      int               `json:"statusCode"`
-	IsBase64Encoded bool              `json:"isBase64Encoded"`
-	Headers         map[string]string `json:"headers"`
-	Body            string            `json:"body"`
 }
 
 var m = map[string]int{
@@ -42,7 +34,6 @@ var (
 )
 
 func handleRequest(event Event) ([]string, error) {
-
 	_, ok := m[event.HashingType]
 
 	if !ok {
@@ -85,34 +76,34 @@ func handleRequest(event Event) ([]string, error) {
 	return results, nil
 }
 
-func Handler(event Event) (Response, error) {
-	results, err := handleRequest(event)
+func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	var event Event
+
+	err := json.Unmarshal([]byte(req.Body), &event)
 	if err != nil {
-		var statusCode int
-		var result string
-
-		switch err {
-		case ErrEmptyNodes, ErrEmptyHashKeys, ErrEmptyHashType, ErrFailureCreatingHasher, ErrFailureHashingKey, ErrInvalidReplicas, ErrUnknownHashType:
-			statusCode = 400
-			result = err.Error()
-		default:
-			statusCode = 500
-			result = "Internal Server Error"
-		}
-
-		return Response{
-			StatusCode:      statusCode,
-			IsBase64Encoded: false,
-			Headers:         map[string]string{"Content-Type": "application/json"},
-			Body:            result,
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       fmt.Sprintf("Invalid JSON: %v", err),
 		}, nil
 	}
 
-	return Response{
-		StatusCode:      200,
-		IsBase64Encoded: false,
-		Headers:         map[string]string{"Content-Type": "application/json"},
-		Body:            strings.Join(results, ", "),
+	results, err := handleRequest(event)
+	if err != nil {
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       fmt.Sprintf("Error: %v", err),
+		}, nil
+	}
+
+	// Convert results to JSON
+	responseJSON, _ := json.Marshal(results)
+
+	return events.APIGatewayProxyResponse{
+		StatusCode: 200,
+		Body:       string(responseJSON),
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
 	}, nil
 }
 
