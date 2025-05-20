@@ -34,8 +34,11 @@ bash install.sh
 
 #### 5. Launch basic tests
 
-Here are both **successful** and **failure scenario** `curl` commands for your README, clearly labeled for demonstration and testing:
+At the root of the project there is a `send-requests.sh` script that sends the following basic requests for testing purposes : 
 
+```bash
+bash send-requests.sh blfglg7v2p # replace with corresponding API Gateway endpoint ID
+```
 
 ##### ✅ Successful Request
 
