@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
@@ -32,6 +31,11 @@ var (
 	ErrInvalidReplicas       = errors.New("replicas number should be positive or 0")
 	ErrUnknownHashType       = errors.New("unknown hashing type")
 )
+
+type JsonResponse struct {
+	StatusCode int    `json:"statusCode"`
+	Body       string `json:"body"`
+}
 
 func handleRequest(event Event) ([]string, error) {
 	_, ok := m[event.HashingType]
@@ -81,22 +85,59 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 
 	err := json.Unmarshal([]byte(req.Body), &event)
 	if err != nil {
+		responseBody, _ := json.Marshal(JsonResponse{
+			StatusCode: 400,
+			Body:       err.Error(),
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       fmt.Sprintf("Invalid JSON: %v", err),
+			Body:       string(responseBody),
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
 		}, nil
 	}
 
 	results, err := handleRequest(event)
 	if err != nil {
+		responseBody, _ := json.Marshal(JsonResponse{
+			StatusCode: 400,
+			Body:       err.Error(),
+		})
+
 		return events.APIGatewayProxyResponse{
 			StatusCode: 400,
-			Body:       fmt.Sprintf("Error: %v", err),
+			Body:       string(responseBody),
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
 		}, nil
 	}
 
 	// Convert results to JSON
-	responseJSON, _ := json.Marshal(results)
+	jsonBytes, err := json.Marshal(results)
+	if err != nil {
+		responseBody, _ := json.Marshal(JsonResponse{
+			StatusCode: 400,
+			Body:       err.Error(),
+		})
+
+		return events.APIGatewayProxyResponse{
+			StatusCode: 400,
+			Body:       string(responseBody),
+			Headers: map[string]string{
+				"Content-Type": "application/json",
+			},
+		}, nil
+	}
+
+	jsonString := string(jsonBytes)
+
+	responseJSON, _ := json.Marshal(JsonResponse{
+		StatusCode: 200,
+		Body:       string(jsonString),
+	})
 
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
