@@ -17,7 +17,7 @@ The objective is to enhance understanding of the allocation process and its sign
 
 The following is the architectural overview of the application. Please note that this architecture is intended solely for educational purposes and does not encompass all the best practices typically employed when designing such a project.
 
-<img width="412" alt="Screenshot 2023-03-05 at 5 25 40 PM" src="https://github.com/kounkou/cloud-hasher/assets/2589171/72113ed7-f402-447a-a9e8-a41ac48075af">
+<img width="755" alt="Screenshot 2025-05-19 at 10 15 48 PM" src="https://github.com/user-attachments/assets/9dadf7ec-c3c2-474e-9d95-d7f6e83c5ca6" />
 
 #### 3. Installation
 
