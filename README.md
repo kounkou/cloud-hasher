@@ -50,9 +50,10 @@ curl -X POST \
 **Response:**
 
 ```json
-[
-  "node1"
-]
+{
+  "statusCode": 200,
+  "body": "[\"node1\"]"
+}
 ```
 
 ##### ❌ Failure Scenarios
