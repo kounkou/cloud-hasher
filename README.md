@@ -26,176 +26,109 @@ To install the entire stack locally, you will need to have :
 - Docker
 - Localstack
 
-**Other installs**
+#### 4. Deploy
 
 ```bash
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-sudo apt update
-sudo apt install unzip -y
-unzip awscliv2.zip
-sudo ./aws/install
+bash install.sh
 ```
 
-You can test with
+#### 5. Launch basic tests
+
+Here are both **successful** and **failure scenario** `curl` commands for your README, clearly labeled for demonstration and testing:
+
+
+##### ✅ Successful Request
+
+This command sends a valid payload with all required fields:
 
 ```bash
-aws --version
+curl -X POST \
+     -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" \
+     -d '{"nodes":["node1","node2"],"hashKeys":["node1"],"hashingType":"CONSISTENT_HASHING", "replicas":3}' | jq
 ```
 
-And add alias to setup awslocal
+**Response:**
 
-```bash
-alias awslocal="AWS_ACCESS_KEY_ID=test AWS_SECRET_ACCESS_KEY=test AWS_DEFAULT_REGION=${DEFAULT_REGION:-$AWS_DEFAULT_REGION} aws --endpoint-url=http://${LOCALSTACK_HOST:-localhost}:4566"
+```json
+[
+  "node1"
+]
 ```
 
-#### 4. Usage
+##### ❌ Failure Scenarios
 
-To perform the tests locally, after installing above dependencies, launch Docker desktop, then in another terminal, launch localstack with : 
+###### 1. ❌ Missing `nodes`
 
 ```bash
-docker run --rm -it -p 4566:4566 -p 4571:4571 -v /var/run/docker.sock:/var/run/docker.sock localstack/localstack
+curl -X POST \
+     -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" \
+     -d '{"nodes":[],"hashKeys":["key1"],"hashingType":"CONSISTENT_HASHING", "replicas":3}' | jq
 ```
 
-Then deploy the application
+**Expected Response:**
 
-```bash
-cdklocal bootstrap aws://000000000000/us-east-1 && cdklocal synth && cdklocal deploy
-```
-
-Here is a sample request JSON file containing the structure of an input.
-
-```bash
-$ cat request.json
-'{
-  "nodes": {
-    "node1": "server1",
-    "node2": "server2",
-    "node3": "server3"
-  },
-  "hashKeys": [
-    "key1",
-    "server1",
-    "server3"
-  ],
-  "hashingType": "CONSISTENT_HASHING"
-}
-'
-```
-
-Here is an example request :
-
-```bash
-$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
-  "nodes": {
-    "node1": "server1",
-    "node2": "server2",
-    "node3": "server3"
-  },
-  "hashKeys": [
-    "key1",
-    "server1",
-    "server3"
-  ],
-  "hashingType": "CONSISTENT_HASHING"
-}
-' | jq
-```
-
-Here is an example response to the above request :
-
-```bash
-{
-  "statusCode": 200,
-  "isBase64Encoded": false,
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "server2, server1, server1"
-}
-```
-
-#### 5. Error handling
-
-Error handling helps the user design the code to be robust. The following errors are supported :
-
-- Node list provided is empty
-
-```bash
-$ curl -X POST -H "Content-Type: application/json" -d '{"name":"John"}' https://9jooqblp52.execute-api.localhost.localstack.cloud:4566/prod/ | jq
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   131  100   116  100    15    702     90 --:--:-- --:--:-- --:--:--   823
+```json
 {
   "statusCode": 400,
-  "isBase64Encoded": false,
-  "headers": {
-    "Content-Type": "application/json"
-  },
   "body": "node list is empty"
 }
 ```
 
-- Hashing type is empty
+
+###### 2. ❌ Missing `hashKeys`
 
 ```bash
-$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
-  "nodes": {
-    "node1": "server1",
-    "node2": "server2",
-    "node3": "server3"
-  },
-  "hashKeys": [
-    "key1",
-    "server1",
-    "server3"
-  ],
-  "hashingTypes": "CONSISTENT_HASHING"
-}
-' | jq
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   310  100   116  100   194     24     40  0:00:04  0:00:04 --:--:--    34
-{
-  "statusCode": 400,
-  "isBase64Encoded": false,
-  "headers": {
-    "Content-Type": "application/json"
-  },
-  "body": "hash type is empty"
-}
+curl -X POST \
+     -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" \
+     -d '{"nodes":["node1"],"hashKeys":[],"hashingType":"CONSISTENT_HASHING", "replicas":3}' | jq
 ```
 
-- Empty hashkeys
+**Expected Response:**
 
-```bash
-$ curl -X POST -H "Content-Type: application/json" https://h7p2dwjxxk.execute-api.localhost.localstack.cloud:4566/prod/ -d '{
-  "nodes": {
-    "node1": "server1",
-    "node2": "server2",
-    "node3": "server3"
-  },
-  "hashKey": [
-    "key1",
-    "server1",
-    "server3"
-  ],
-  "hashingType": "CONSISTENT_HASHING"
-}
-' | jq
-  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
-                                 Dload  Upload   Total   Spent    Left  Speed
-100   313  100   121  100   192    583    926 --:--:-- --:--:-- --:--:--  1638
+```json
 {
   "statusCode": 400,
-  "isBase64Encoded": false,
-  "headers": {
-    "Content-Type": "application/json"
-  },
   "body": "hash keys list is empty"
 }
 ```
 
-#### 6. Testing
+
+###### 3. ❌ Invalid `hashingType`
+
+```bash
+curl -X POST \
+     -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" \
+     -d '{"nodes":["node1"],"hashKeys":["key1"],"hashingType":"UNKNOWN", "replicas":3}' | jq
+```
+
+**Expected Response:**
+
+```json
+{
+  "statusCode": 400,
+  "body": "unknown hashing type"
+}
+```
+
+
+###### 4. ❌ Negative `replicas`
+
+```bash
+curl -X POST \
+     -H "Content-Type: application/json" "https://$1.execute-api.localhost.localstack.cloud:4566/prod" \
+     -d '{"nodes":["node1"],"hashKeys":["key1"],"hashingType":"CONSISTENT_HASHING", "replicas":-1}' | jq
+```
+
+**Expected Response:**
+
+```json
+{
+  "statusCode": 400,
+  "body": "replicas number should be positive or 0"
+}
+```
+
+#### 6. Other Testing
 
 To perform test for the stack please run the following command
 
